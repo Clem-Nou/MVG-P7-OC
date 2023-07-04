@@ -11,8 +11,8 @@ const bookSchema = mongoose.Schema({
     type: Array,
     default: [
       {
-        userId: String,
-        grade: Number,
+        userId: { type: String, required: true },
+        grade: { type: Number, required: true },
       },
     ],
   },
