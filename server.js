@@ -1,6 +1,7 @@
 const http = require('http');
 const app = require('./app');
 
+// Fonction pour normaliser le numéro de port
 const normalizePort = val => {
   const port = parseInt(val, 10);
 
@@ -15,11 +16,12 @@ const normalizePort = val => {
 const port = normalizePort(process.env.PORT || '4000');
 app.set('port', port);
 
+// Gestionnaire d'erreurs pour le serveur
 const errorHandler = error => {
   if (error.syscall !== 'listen') {
     throw error;
   }
-  // eslint-disable-next-line no-use-before-define
+  // Récupération de l'adresse et du port du serveur
   const address = server.address();
   const bind =
     typeof address === 'string' ? `pipe ${address}` : `port: ${port}`;
@@ -37,8 +39,10 @@ const errorHandler = error => {
   }
 };
 
+// Création du serveur HTTP
 const server = http.createServer(app);
 
+// Gestion des événements du serveur
 server.on('error', errorHandler);
 server.on('listening', () => {
   const address = server.address();
@@ -46,4 +50,5 @@ server.on('listening', () => {
   console.log(`Listening on ${bind}`);
 });
 
+// Démarrage du serveur
 server.listen(port);

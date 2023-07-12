@@ -11,14 +11,17 @@
 
 const fs = require('fs');
 const sharp = require('sharp');
+sharp.cache(false);
 const Book = require('../models/Book');
 
 exports.createBook = (req, res, next) => {
   const bookObject = JSON.parse(req.body.book);
-  const resizedImagePath = `images/resized_${req.file.filename}.webp`;
+  const resizedImagePath = `images/resized_${
+    req.file.filename.split('.')[0]
+  }.webp`;
 
   sharp(req.file.path)
-    .resize(340, 475)
+    .resize(340, 475, { fit: 'cover' })
     .toFormat('webp') // Convertir en format WebP
     .toFile(resizedImagePath)
     .then(() => {
@@ -84,15 +87,17 @@ exports.modifyBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then(book => {
       if (book.userId != req.auth.userId) {
-        res.status(401).json({ message: 'Non-autorisé' });
+        res.status(403).json({ message: 'unauthorized request' });
       } else {
         // Vérifier si une nouvelle image est téléchargée
         if (req.file) {
           // Supprimer l'ancienne image
-          const filename = book.imageUrl.split('/images/')[1].split('.webp')[0];
+          const filename = book.imageUrl.split('/images/')[1];
           fs.unlink(`images/${filename}`, () => {
             // Redimensionner et enregistrer la nouvelle image avec sharp
-            const resizedImagePath = `images/resized_${req.file.filename}.webp`;
+            const resizedImagePath = `images/resized_${
+              req.file.filename.split('.')[0]
+            }.webp`;
             sharp(req.file.path)
               .resize(340, 475)
               .toFormat('webp') // Convertir en format WebP
@@ -138,7 +143,7 @@ exports.deleteBook = (req, res, next) => {
       if (book.userId != req.auth.userId) {
         res.status(401).json({ message: 'Non-autorisé' });
       } else {
-        const filename = book.imageUrl.split('/images/')[1].split('.webp')[0];
+        const filename = book.imageUrl.split('/images/')[1];
         fs.unlink(`images/${filename}`, () => {
           Book.deleteOne({ _id: req.params.id })
             .then(() => {

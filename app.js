@@ -6,6 +6,7 @@ const path = require('path');
 const BookRoutes = require('./routes/book');
 const userRoutes = require('./routes/user');
 
+// Connexion à la base de données MongoDB
 mongoose
   .connect(
     'mongodb+srv://Billy:mdp@openclassroomsp7.jzeavzd.mongodb.net/?retryWrites=true&w=majority',
@@ -19,6 +20,7 @@ mongoose
 
 const app = express();
 
+// Middleware pour gérer les en-têtes CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
@@ -34,8 +36,11 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Routes pour les livres et les utilisateurs
 app.use('/api/books', BookRoutes);
 app.use('/api/auth', userRoutes);
+
+// Gestion des fichiers images statiques
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
 module.exports = app;
