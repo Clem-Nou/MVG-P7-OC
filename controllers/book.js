@@ -51,7 +51,7 @@ exports.createBook = (req, res, next) => {
     .catch(error => {
       fs.unlinkSync(resizedImagePath); // Suppression de l'image redimensionnée
       fs.unlinkSync(req.file.path); // Suppression de l'image d'origine
-      res.status(400).json({ error }); // Réponse avec statut 400 en cas d'erreur
+      res.status(500).json({ error }); // Réponse avec statut 400 en cas d'erreur
     });
 };
 
@@ -89,7 +89,7 @@ exports.bestRatings = (req, res, next) => {
     })
     .catch(error => {
       // En cas d'erreur, renvoyer une réponse JSON avec un statut HTTP 500
-      res.status(500).json({ error });
+      res.status(400).json({ error });
     });
 };
 
@@ -156,20 +156,22 @@ exports.modifyBook = (req, res, next) => {
         }
       }
     })
-    .catch(error => res.status(400).json({ error }));
+    .catch(error => res.status(500).json({ error }));
 };
 
 exports.deleteBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
+    // Recherche du livre dans la base de données en utilisant l'identifiant
     .then(book => {
       if (book.userId != req.auth.userId) {
         // Vérifier si l'utilisateur est autorisé à supprimer le livre
         res.status(401).json({ message: 'Non-autorisé' });
       } else {
-        const filename = book.imageUrl.split('/images/')[1];
+        const filename = book.imageUrl.split('/images/')[1]; // Obtenir le nom du fichier de l'image à supprimer
         fs.unlink(`images/${filename}`, () => {
-          // Supprimer l'ancienne image du livre
+          // Supprimer l'ancienne image du livre en utilisant fs.unlink
           Book.deleteOne({ _id: req.params.id })
+            // Supprimer le livre de la base de données en utilisant deleteOne
             .then(() => {
               res.status(200).json({ message: 'Objet supprimé !' });
             })
@@ -183,10 +185,7 @@ exports.deleteBook = (req, res, next) => {
 };
 
 exports.ratingBook = (req, res, next) => {
-  const { id } = req.params;
-  const { rating } = req.body;
-
-  Book.findById(id)
+  Book.findById(req.params.id)
     .then(book => {
       if (!book) {
         // Vérifier si le livre existe
@@ -204,15 +203,15 @@ exports.ratingBook = (req, res, next) => {
       }
 
       // Ajouter la nouvelle notation au tableau "ratings" dans le schéma du livre
-      book.ratings.push({ userId: req.auth.userId, grade: rating });
+      book.ratings.push({ userId: req.auth.userId, grade: req.body.rating });
 
-      // Calculer la nouvelle note moyenne en arrondissant la somme  au nombre d'évaluations
+      // Calculer la nouvelle note moyenne en arrondissant la somme au nombre d'évaluations
       const totalRatings = book.ratings.length + 1;
       const sumRatings = book.ratings.reduce(
         (sum, rating) => sum + rating.grade,
         0,
       );
-      const newRating = rating;
+      const newRating = req.body.rating;
       const newAverageRating = Math.round(
         (sumRatings + newRating) / totalRatings,
       );
