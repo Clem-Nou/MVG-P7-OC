@@ -1,3 +1,6 @@
+/* eslint-disable arrow-parens */
+/* eslint-disable operator-linebreak */
+/* eslint-disable no-use-before-define */
 const http = require('http');
 const app = require('./app');
 

@@ -1,3 +1,7 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable consistent-return */
+/* eslint-disable no-unused-vars */
+/* eslint-disable arrow-parens */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
